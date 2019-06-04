@@ -1,0 +1,224 @@
+- hosts: all
+  become: yes
+  become_user: root
+
+  tasks:
+    - block:
+      - name: "Download and extract Splunk"
+        unarchive:
+          src: "https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.2.6&product=splunk&filename=splunk-7.2.6-c0bf0f679ce9-Linux-x86_64.tgz&wget=true"
+          dest: "/opt"
+          remote_src: yes
+          mode: 0755
+
+      - name: "copy over basic conf files"
+        copy:
+          src: "files/clustermaster/{{ item }}"
+          dest: "/opt/splunk/etc/system/local/{{ item }}"
+          mode: 0644
+        loop:
+          - ui-tour.conf
+
+      - name: "copy over master-apps conf files"
+        copy:
+          src: "files/clustermaster/master-apps/{{ item }}"
+          dest: "/opt/splunk/etc/master-apps/_cluster/local/"
+          mode: 0644
+        loop:
+          - indexes.conf
+
+      - name: "template other conf files"
+        template:
+          src: "files/clustermaster/{{ item }}"
+          dest: "/opt/splunk/etc/system/local/{{ item }}"
+          mode: 0644
+        loop:
+          - server.conf
+          - user-seed.conf
+          - inputs.conf
+          - outputs.conf
+
+      - name: "open firewall port for Splunk"
+        ufw:
+          rule: allow
+          port: "{{ item }}"
+        loop:
+          - 9997
+          - 8000
+          - 8089
+          - 8191
+          - 9887
+
+      - name: "start Splunk"
+        shell: "/opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt"
+      tags: cluster_master
+
+    - block:
+      - name: "download and extract Splunk"
+        unarchive:
+          src: "https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.2.6&product=splunk&filename=splunk-7.2.6-c0bf0f679ce9-Linux-x86_64.tgz&wget=true"
+          dest: "/opt"
+          remote_src: yes
+          mode: 0755
+
+      - name: "copy over basic conf files"
+        copy:
+          src: "files/indexers/{{ item }}"
+          dest: "/opt/splunk/etc/system/local/{{ item }}"
+          mode: 0644
+        loop:
+          - indexes.conf
+
+      - name: "template other conf files"
+        template:
+          src: "files/indexers/{{ item }}"
+          dest: "/opt/splunk/etc/system/local/{{ item }}"
+          mode: 0644
+        loop:
+          - inputs.conf
+          - server.conf
+          - user-seed.conf
+          - limits.conf
+
+      - name: "open firewall port for Splunk output"
+        ufw:
+          rule: allow
+          port: "{{ item }}"
+        loop:
+          - 9997
+          - 8000
+          - 8080
+          - 8089
+          - 8191
+
+      - name: "start Splunk"
+        shell: "/opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt"
+        ignore_errors: yes
+      tags: indexers
+
+    - block:
+      - name: "Download and extract Splunk"
+        unarchive:
+          src: "https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.2.6&product=splunk&filename=splunk-7.2.6-c0bf0f679ce9-Linux-x86_64.tgz&wget=true"
+          dest: "/opt"
+          remote_src: yes
+          mode: 0755
+
+      - name: "template other conf files"
+        template:
+          src: "files/searchheads/{{ item }}"
+          dest: "/opt/splunk/etc/system/local/{{ item }}"
+          mode: 0644
+        loop:
+          - outputs.conf
+          - server.conf
+          - user-seed.conf
+          - ui-tour.conf
+          - limits.conf
+          - inputs.conf
+
+      - name: "open firewall port for Splunk output"
+        ufw:
+          rule: allow
+          port: "{{ item }}"
+        loop:
+          - 9997
+          - 8000
+          - 8080
+          - 8089
+          - 8181
+          - 8191
+
+      - name: "start Splunk"
+        shell: "/opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt"
+        ignore_errors: yes
+
+      - name: "Initialise Search Head Clustering"
+        shell: "/opt/splunk/bin/splunk init shcluster-config -auth admin:{{ splunk_password }} -mgmt_uri https://{{ self_ip }}:8089 -replication_port {{ shc_rep_port }} -replication_factor {{ shc_rep_factor }} -conf_deploy_fetch_url https://{{ deployer_url}}:8089 -secret {{ shc_pass }} -shcluster_label {{ shcluster_label }}"
+
+      - name: "Restart Splunk"
+        shell: "/opt/splunk/bin/splunk restart"
+      tags: search_heads
+
+    - block:
+      - name: "Download and extract Splunk"
+        unarchive:
+          src: "https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.2.6&product=splunk&filename=splunk-7.2.6-c0bf0f679ce9-Linux-x86_64.tgz&wget=true"
+          dest: "/opt"
+          remote_src: yes
+          mode: 0755
+
+      - name: "template other conf files"
+        template:
+          src: "files/searchheads/{{ item }}"
+          dest: "/opt/splunk/etc/system/local/{{ item }}"
+          mode: 0644
+        loop:
+          - outputs.conf
+          - server.conf
+          - user-seed.conf
+          - ui-tour.conf
+          - inputs.conf
+
+      - name: "open firewall port for Splunk output"
+        ufw:
+          rule: allow
+          port: "{{ item }}"
+        loop:
+          - 9997
+          - 8000
+          - 8080
+          - 8089
+          - 8191
+
+      - name: "start Splunk"
+        shell: "/opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt"
+        ignore_errors: yes
+      tags: search_head_deployer
+
+    - block:
+      - name: "Download and extract Splunk"
+        unarchive:
+          src: "https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.2.6&product=splunk&filename=splunk-7.2.6-c0bf0f679ce9-Linux-x86_64.tgz&wget=true"
+          dest: "/opt"
+          remote_src: yes
+          mode: 0755
+
+      - name: "template other conf files"
+        template:
+          src: "files/searchheads/{{ item }}"
+          dest: "/opt/splunk/etc/system/local/{{ item }}"
+          mode: 0644
+        loop:
+          - outputs.conf
+          - server.conf
+          - user-seed.conf
+          - ui-tour.conf
+          - limits.conf
+          - inputs.conf
+
+      - name: "open firewall port for Splunk output"
+        ufw:
+          rule: allow
+          port: "{{ item }}"
+        loop:
+          - 9997
+          - 8000
+          - 8080
+          - 8089
+          - 8181
+          - 8191
+
+      - name: "start Splunk"
+        shell: "/opt/splunk/bin/splunk start --accept-license --answer-yes --no-prompt"
+
+      - name: "Initialise Search Head Clustering"
+        shell: "/opt/splunk/bin/splunk init shcluster-config -auth admin:{{ splunk_password }} -mgmt_uri https://{{ self_ip }}:8089 -replication_port {{ shc_rep_port }} -replication_factor {{ shc_rep_factor }} -conf_deploy_fetch_url https://{{ deployer_url}}:8089 -secret {{ shc_pass }} -shcluster_label {{ shcluster_label }}"
+
+      - name: "Restart Splunk"
+        shell: "/opt/splunk/bin/splunk restart"
+
+      - name: "Bootstrap the Captain"
+        shell: "/opt/splunk/bin/splunk bootstrap shcluster-captain -servers_list https://{{ sh1 }}:8089,https://{{ sh2 }}:8089,https://{{ self_ip }}:8089 -auth admin:{{ splunk_password }}"
+
+      tags: search_head_captain
