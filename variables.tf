@@ -4,10 +4,10 @@
 # here for simplicity and ease.
 
 variable "access_key" {
-  default = "<your_access_key"
+  default = "abcdef"
 }
 variable "secret_key" {
-  default = "<your_secret_key>"
+  default = "abcdef"
 }
 
 variable "splunk_password" {
@@ -16,7 +16,7 @@ variable "splunk_password" {
 
 # AWS region
 variable "region" {
-  default = "eu-west-1"
+  default = "ap-southeast-2"
 }
 
 # Cluster pass4SymmKey
@@ -41,7 +41,7 @@ variable "env_name" {
 
 # Set the ami here - all instances will be built using the same one
 variable "ami" {
-  default = "ami-08d658f84a6d84a80"  # Ubuntu 18.04.2 on eu-west-1
+  default = "ami-0650cf37ced9a2e0f"  # Ubuntu 20.04 on ap-se-2
 }
 
 # Set the indexer instance type here
