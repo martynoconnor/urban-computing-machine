@@ -3,15 +3,20 @@
 # However, as this is a proof of concept, I'm going to store them
 # here for simplicity and ease.
 
-variable "access_key" {
-  default = "abcdef"
+variable "shared_credentials" {
+  default = "/home/william/.aws/credentials"
 }
-variable "secret_key" {
-  default = "abcdef"
+
+variable "profile" {
+  default = "default"
 }
 
 variable "splunk_password" {
   default = "changed123!"
+}
+
+variable "data_local_file_public_key" {
+  default = "/home/william/.ssh/id_rsa.pub"
 }
 
 # AWS region

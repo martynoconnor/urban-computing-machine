@@ -1,15 +1,15 @@
 
 # Set AWS as the provider and establish creds and default region
 provider aws {
-  access_key = var.access_key
-  secret_key = var.secret_key
+  shared_credentials_file = var.shared_credentials
+  profile = var.profile
   region = var.region
 }
 
 # Create a data object using the user's public SSH key
 # If no such file exists, the user must generate it using ssh-keygen
 data local_file public_key {
-  filename = "/home/william/.ssh/id_rsa.pub"
+  filename = var.data_local_file_public_key 
 }
 
 # Create an ec2_key and map it to the local file specified above
