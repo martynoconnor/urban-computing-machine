@@ -46,7 +46,7 @@ variable "env_name" {
 
 # Set the ami here - all instances will be built using the same one
 variable "ami" {
-  default = "ami-0650cf37ced9a2e0f"  # Ubuntu 20.04 on ap-se-2
+  default = "ami-0650cf37ced9a2e0f" # Ubuntu 20.04 on ap-se-2
 }
 
 # Set the indexer instance type here

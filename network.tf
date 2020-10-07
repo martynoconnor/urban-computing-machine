@@ -1,8 +1,8 @@
 # Define the virtual private cloud
 resource "aws_vpc" "splunk-cluster-env" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true
-  enable_dns_support = true
+  enable_dns_support   = true
   tags = {
     Name = "splunk-cluster-env"
   }
@@ -15,9 +15,9 @@ resource "aws_security_group" "splunk_generic" {
 
   ingress {
     # Splunk web
-    from_port   = var.splunkweb_port
-    to_port     = var.splunkweb_port
-    protocol    = "tcp"
+    from_port = var.splunkweb_port
+    to_port   = var.splunkweb_port
+    protocol  = "tcp"
     # Please restrict your ingress to only necessary IPs and ports.
     # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
     # cidr_blocks = ["81.174.151.36/32"] # My static IP at home
@@ -82,10 +82,10 @@ resource "aws_security_group" "splunk_generic" {
   }
 
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
     #prefix_list_ids = ["pl-12c4e678"]
   }
 }
